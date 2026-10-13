@@ -13,6 +13,10 @@ The workflow is divided into three distinct layers:
 2. **The Backend (The Middleware):** A Python-based API that routes the user's query, fetches relevant historical context, and oversees the AI generation.
 3. **The AI & Data Layer (The Brain):** An entirely offline suite of machine learning models and databases that process text, understand semantic meaning, and generate answers.
 
+The actual POC deployment looks thus:
+
+<img width="1883" height="830" alt="image" src="https://github.com/user-attachments/assets/c48e81de-5404-4a15-95f3-b0dcb1034bf0" />
+
 ## Tooling Context and Justification
 To ensure the archive does not feed into external commercial models and remains functional without internet access, the following open-source stack is utilised:
 
