@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unlocking the Power of the Black London Collection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-accent: #FF4500;
+            --primary-accent-dark: #CC3700;
+            --secondary-highlight: #FFD700;
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-light: #777777;
+            --bg-main: #FFFFFF;
+            --bg-secondary: #F8F8F8;
+            --border-subtle: #D0D0D0;
+            --shadow-subtle: rgba(0, 0, 0, 0.18);
+            --shadow-hover: rgba(0, 0, 0, 0.25);
+            --primary-blue: #007BFF;
+            --primary-blue-dark: #0056b3;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-secondary);
+            background-image: url('reels.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+
+        .main-content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            width: 95%;
+            max-width: 1600px;
+            margin: 40px auto;
+            background-color: var(--bg-main);
+            box-shadow: 0 8px 30px var(--shadow-subtle);
+            border-radius: 15px;
+            overflow: hidden;
+            min-height: 85vh;
+            position: relative;
+            z-index: 5;
+        }
+
+        .video-column {
+            flex: 2;
+            padding: 40px;
+            overflow-y: auto;
+            background-color: var(--bg-main);
+            box-sizing: border-box;
+            border-right: 1px solid var(--border-subtle);
+        }
+
+        .article-column {
+            flex: 1;
+            padding: 40px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border-subtle);
+            overflow-y: scroll;
+            max-height: 90vh;
+            box-sizing: border-box;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            color: var(--primary-accent);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .article-column h2 {
+            font-size: 1.8em;
+            color: var(--primary-accent);
+            border-bottom: 2px solid var(--border-subtle);
+            padding-bottom: 10px;
+            margin-top: 2em;
+            margin-bottom: 20px;
+        }
+
+        .featured-video {
+            margin-bottom: 30px;
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            background-color: #000;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .featured-video video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .ai-search-container {
+            background-color: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 40px;
+        }
+
+        .ai-search-container h3 {
+            margin-top: 0;
+            color: var(--text-primary);
+        }
+
+        .ai-input-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .ai-search-container input[type="text"] {
+            flex: 1;
+            padding: 15px 20px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            font-size: 1.1em;
+            outline: none;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        .ai-search-container input[type="text"]:focus {
+            border-color: var(--primary-accent);
+        }
+
+        .ai-search-container button {
+            background-color: var(--primary-accent);
+            color: white;
+            border: none;
+            padding: 0 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .ai-search-container button:hover {
+            background-color: var(--primary-accent-dark);
+        }
+
+        .ai-response-box {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-left: 4px solid var(--primary-accent);
+            border-radius: 4px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .video-item {
+            cursor: pointer;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            background-color: var(--bg-main);
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-hover);
+            border-color: var(--primary-accent);
+        }
+
+        .video-item h3 {
+            font-size: 1.2em;
+            margin: 0 0 10px 0;
+        }
+
+        .article-column p, .article-column li {
+            line-height: 1.8;
+            margin-bottom: 1.5em;
+            font-size: 1.05em;
+        }
+
+        .article-column ul {
+            padding-left: 20px;
+        }
+
+        .reel-reference {
+            font-weight: 700;
+            background-color: rgba(0, 123, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: var(--primary-blue);
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .reel-reference:hover {
+            background-color: rgba(0, 123, 255, 0.2);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content-wrapper { flex-direction: column; }
+            .video-column, .article-column { border: none; padding: 20px; }
+            .article-column { position: static; max-height: none; overflow-y: visible; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-content-wrapper" id="mainContentWrapper">
+        <div class="video-column">
+            
+            <h1>SYA #BlackLives: The Black London Collection</h1>
+
+            <!-- Native HTML5 Media Player with WebVTT Support -->
+            <div class="featured-video">
+                <video id="mainVideoPlayer" controls crossorigin="anonymous">
+                    <source src="" type="video/mp4">
+                    <track id="videoCaptions" kind="captions" srclang="en" label="English" default>
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <!-- Offline RAG Search Interface -->
+            <div class="ai-search-container">
+                <h3>Ask the Archive (Local AI)</h3>
+                <p style="font-size: 0.9em; margin-bottom: 15px;">Ask a natural language question. The AI will search local transcripts and jump the video directly to cited evidence.</p>
+                <div class="ai-input-group">
+                    <input type="text" id="aiSearchInput" placeholder="e.g. What does Fela Kuti think of Afrobeat?">
+                    <button onclick="submitAIQuery()">Search</button>
+                </div>
+                <div id="aiResponseBox" class="ai-response-box"></div>
+            </div>
+
+            <h2>Available Local Reels</h2>
+            <div class="video-grid" id="videoGrid"></div>
+        </div>
+
+        <div class="article-column">
+            <p><strong>The "Black London" reels offer a vibrant and nuanced historical record, revealing:</strong></p>
+            
+            <h2>Political and Social Activism:</h2>
+            <p>The archives vividly document the ongoing struggle for civil rights and fair representation in the UK. We see discussions on "race equality, immigration rules, and voting rights for immigrants" amidst "rising racism" and "anticipated violence in 1992" <span class="reel-reference" data-bl-id="BL_005" data-time="0">BL_005</span>. Key moments include the appointment of Herman Ouseley as the first Black chairman of the Commission for Racial Equality <span class="reel-reference" data-bl-id="BL_009" data-time="0">BL_009</span> and discussions around police "cultural awareness training" <span class="reel-reference" data-bl-id="BL_014" data-time="120">BL_014 @ 02:00</span>.</p>
+            
+            <h2>Celebrating Cultural Identity:</h2>
+            <p>We see the influence of musical giants like <strong>Fela Kuti</strong> <span class="reel-reference" data-bl-id="BL_009" data-time="1752">BL_009 @ 29:12</span>, whose Afrobeat revolutionised music, and the cinematic impact of figures like <strong>Melvin Van Peebles</strong> <span class="reel-reference" data-bl-id="BL_004" data-time="0">BL_004</span>.</p>
+        </div>
+    </div>
+
+    <script>
+        const localVideos = [];
+        for (let i = 1; i <= 40; i++) {
+            const paddedNumber = String(i).padStart(3, '0');
+            localVideos.push({
+                id: `BL_${paddedNumber}`,
+                filename: `BLACKLIVES_BL_${paddedNumber}.mp4`,
+                title: `Black London Collection - Reel ${paddedNumber}`
+            });
+        }
+
+        function loadLocalVideo(filename, timecode = 0) {
+            const player = document.getElementById('mainVideoPlayer');
+            const captionTrack = document.getElementById('videoCaptions');
+            
+            player.src = `vimeo_downloads/${filename}`;
+            const vttFilename = filename.replace('.mp4', '.vtt');
+            captionTrack.src = `transcripts/${vttFilename}`;
+            
+            player.onloadedmetadata = function() {
+                player.currentTime = timecode;
+                player.play();
+            };
+
+            window.scrollTo({
+                top: document.getElementById('mainVideoPlayer').offsetTop - 20,
+                behavior: 'smooth'
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const grid = document.getElementById('videoGrid');
+            localVideos.forEach(video => {
+                const item = document.createElement('div');
+                item.className = 'video-item';
+                item.innerHTML = `<h3>${video.id}</h3><p style="margin:0; font-size:0.9em;">${video.title}</p>`;
+                item.onclick = () => loadLocalVideo(video.filename);
+                grid.appendChild(item);
+            });
+
+            const references = document.querySelectorAll('.reel-reference');
+            references.forEach(ref => {
+                ref.addEventListener('click', (e) => {
+                    const blId = e.target.getAttribute('data-bl-id');
+                    const timecode = parseInt(e.target.getAttribute('data-time')) || 0;
+                    const videoObj = localVideos.find(v => v.id === blId);
+                    if (videoObj) loadLocalVideo(videoObj.filename, timecode);
+                });
+            });
+
+            if (localVideos.length > 0) loadLocalVideo(localVideos[0].filename);
+
+            document.getElementById('aiSearchInput').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') submitAIQuery();
+            });
+        });
+
+        async function submitAIQuery() {
+            const query = document.getElementById('aiSearchInput').value;
+            const responseBox = document.getElementById('aiResponseBox');
+            
+            if (!query) return;
+
+            responseBox.style.display = 'block';
+            responseBox.innerHTML = `<em>Querying local database and Ollama...</em>`;
+
+            try {
+                const response = await fetch('http://localhost:8000/ask', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question: query })
+                });
+
+                if (!response.ok) throw new Error(`Server returned status ${response.status}`);
+
+                const data = await response.json();
+                
+                if (!data.citations || data.citations.length === 0) {
+                    responseBox.innerHTML = `<strong>AI Answer:</strong> ${data.answer}`;
+                    return;
+                }
+
+                const topCitation = data.citations[0];
+                const reelId = topCitation.filename.replace('.mp4', '').replace('BLACKLIVES_', '');
+                
+                responseBox.innerHTML = `
+                    <strong>AI Answer:</strong> ${data.answer} <br><br>
+                    <button onclick="loadLocalVideo('${topCitation.filename}', ${topCitation.time})" 
+                            style="padding: 8px 15px; margin-top: 10px; font-size: 0.9em; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        ▶ Play Evidence (${reelId} @ ${topCitation.time}s)
+                    </button>
+                `;
+
+            } catch (e) {
+                responseBox.innerHTML = `<span style="color:red;">Error connecting to Python backend. Ensure uvicorn is running. (${e.message})</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
