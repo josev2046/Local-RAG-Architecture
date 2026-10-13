@@ -1,0 +1,53 @@
+@startuml
+title Local RAG Architecture Flow - Black London Collection
+
+actor User as "Researcher / User"
+participant UI as "Frontend (index.html)"
+participant Backend as "Middleware (FastAPI / backend.py)"
+database Chroma as "Vector DB (ChromaDB)"
+participant Ollama as "Local LLM (Ollama - Llama 3.1)"
+participant Media as "Local Media & Captions"
+
+== Offline Indexing Pipeline (One-off / Build phase) ==
+note over Media, Chroma
+  1. OpenAI Whisper processes local MP4 reels -> outputs JSON transcripts + start/end seconds
+  2. build_index.py loads transcripts -> chunks text -> embeds via all-MiniLM-L6-v2
+  3. json_to_vtt.py converts JSON -> WebVTT subtitle files
+end note
+
+== Query Execution Flow ==
+User -> UI : Inputs query ("What does Fela Kuti think of Afrobeat?")
+activate UI
+
+UI -> Backend : POST /ask {"question": "..."}
+activate Backend
+
+Backend -> Chroma : Query collection for top 3 relevant chunks
+activate Chroma
+Chroma --> Backend : Return transcript chunks + metadata (filename, start_time)
+deactivate Chroma
+
+Backend -> Ollama : Prompt LLM (Strict anti-hallucination instruction + retrieved context)
+activate Ollama
+Ollama --> Backend : Return synthesized textual answer
+deactivate Ollama
+
+Backend --> UI : Respond HTTP 200 JSON {answer, citations: [{filename, time}]}
+deactivate Backend
+
+UI -> User : Display AI Answer + ▶ Play Evidence Button
+deactivate UI
+
+== Media Navigation & Synchronisation ==
+User -> UI : Clicks "▶ Play Evidence (BL_009 @ 1752s)"
+activate UI
+
+UI -> Media : Load vimeo_downloads/BLACKLIVES_BL_009.mp4
+UI -> Media : Load synchronized captions transcripts/BLACKLIVES_BL_009.vtt
+Media --> UI : Media Metadata Loaded
+
+UI -> Media : Jump video currentTime to 1752s & trigger play()
+UI --> User : Synchronized video playback with WebVTT captions
+deactivate UI
+
+@enduml
