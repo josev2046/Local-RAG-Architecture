@@ -1,7 +1,7 @@
 # SYA #BlackLives: The Black London Collection - Local RAG Architecture
 
 ## Project Overview
-This repository contains an on premiteration of the architecture and documentation for the "Black London" audiovisual archive (1991–1993) retrieval system. Initially reliant on a proprietary cloud video platform for hosting and metadata indexing, the prototype demonstrated vulnerability to third-party platform deprecation and data loss. To guarantee long-term archival resilience, data sovereignty, and strict privacy, the system has been re-architected into a fully offline, open-source Retrieval-Augmented Generation (RAG) ecosystem.
+This repository contains an on prem iteration of the architecture and documentation for the "Black London" audiovisual archive (1991–1993) retrieval system. Initially reliant on a proprietary cloud video platform for hosting and metadata indexing, the prototype demonstrated vulnerability to third-party platform deprecation and data loss. To guarantee long-term archival resilience, data sovereignty, and strict privacy, the system has been re-architected into a fully offline, open-source Retrieval-Augmented Generation (RAG) ecosystem.
 
 ## Architectural Approach
 The system operates by decoupling the video assets from the search intelligence. It converts spoken audio into searchable text, embeds that text into a locally hosted vector database, and uses a local Large Language Model (LLM) to answer natural language queries based strictly on the validated archival transcripts.
