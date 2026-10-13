@@ -105,3 +105,22 @@ python3 -m http.server 8888
 - **Data Sovereignty:** By keeping all media, databases, and AI models local, the project is completely insulated from commercial platform changes, arbitrary API limits, or account deletions.
 - **Strict Archival Grounding:** The LLM is restricted from using its general training data, ensuring historical accuracy and protecting the integrity of the curators' metadata.
 - **Time-Aware Retrieval:** The integration of timestamped transcripts allows the system to bridge the gap between text-based search and audiovisual playback seamlessly.
+
+## Quick Start (Daily Usage / Post-Reboot)
+
+If you restart your machine, follow these simple steps to bring the service back online:
+
+### Step 1: Launch the AI Service (Terminal Tab 1)
+```bash
+ollama run llama3.1
+  ``` 
+
+### Step 2: Launch the Backend API (Terminal Tab 2)
+```bash
+cd Sites/localhost/RAG
+source venv/bin/activate
+python3 -m uvicorn backend:app --host localhost --port 8000
+  ``` 
+
+### Step 3: Open the Interface
+Ensure your local server (e.g., MAMP) is active, then navigate to your local web address in your browser.
