@@ -1,4 +1,6 @@
 # SYA #BlackLives: The Black London Collection - Local RAG Architecture
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23351532.svg)](https://doi.org/10.5281/zenodo.23351532)
+
 
 ## Project Overview
 This repository contains an on-prem iteration of the architecture and documentation for the "Black London" audiovisual archive (1991–1993) retrieval system. Initially reliant on a proprietary cloud video platform for hosting and metadata indexing, the prototype demonstrated vulnerability to third-party platform deprecation and data loss. To guarantee long-term archival resilience, data sovereignty, and strict privacy, the system has been re-architected into a fully offline, open-source Retrieval-Augmented Generation (RAG) ecosystem.
