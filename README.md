@@ -1,7 +1,7 @@
 # SYA #BlackLives: The Black London Collection - Local RAG Architecture
 
 ## Project Overview
-This repository contains an on prem iteration of the architecture and documentation for the "Black London" audiovisual archive (1991–1993) retrieval system. Initially reliant on a proprietary cloud video platform for hosting and metadata indexing, the prototype demonstrated vulnerability to third-party platform deprecation and data loss. To guarantee long-term archival resilience, data sovereignty, and strict privacy, the system has been re-architected into a fully offline, open-source Retrieval-Augmented Generation (RAG) ecosystem.
+This repository contains an on-prem iteration of the architecture and documentation for the "Black London" audiovisual archive (1991–1993) retrieval system. Initially reliant on a proprietary cloud video platform for hosting and metadata indexing, the prototype demonstrated vulnerability to third-party platform deprecation and data loss. To guarantee long-term archival resilience, data sovereignty, and strict privacy, the system has been re-architected into a fully offline, open-source Retrieval-Augmented Generation (RAG) ecosystem.
 
 ## Architectural Approach
 The system operates by decoupling the video assets from the search intelligence. It converts spoken audio into searchable text, embeds that text into a locally hosted vector database, and uses a local Large Language Model (LLM) to answer natural language queries based strictly on the validated archival transcripts.
@@ -49,55 +49,57 @@ Ensure the new host machine meets the operational baselines required for local A
 
 ### 2. Transfer the Pre-Compiled Project Directory
 Do not force the new machine to transcribe the videos or build the database from scratch. Package and transfer the entire project directory, which must include:
-* The `vimeo_downloads` directory containing the `.mp4` video files.
-* The `transcripts` directory containing all Whisper `.json` files.
-* The `chroma_db` directory (containing the pre-embedded vectors for instant search).
-* The Python backend scripts and HTML/JS frontend files.
+- The `vimeo_downloads` directory containing the `.mp4` video files.
+- The `transcripts` directory containing all Whisper `.json` files.
+- The `chroma_db` directory (containing the pre-embedded vectors for instant search).
+- The Python backend scripts and HTML/JS frontend files.
 
 ### 3. Install Core System Software
 The new machine requires the base execution engines:
-* **Ollama:** Install Ollama and pull the specific LLM being utilised.
-  
-```
+- **Ollama:** Install Ollama and pull the specific LLM being utilised.
+```bash
 # Install Ollama via Homebrew
 brew install --cask ollama
 
-# Pull and run the recommended model (e.g., Llama 3.1 8B)
+# Pull and run the recommended model
 ollama run llama3.1
-```
-
-  
-* **Python 3:** Ensure Python 3.8+ is installed on the system.
-  
-```
+  ``` 
+- **Python 3:** Ensure Python 3.8+ is installed on the system.
+```bash
 brew install python3
-```
-* **Local Web Server:** Ensure a local server (like MAMP) is available to host the HTML frontend, or be prepared to use Python's built-in HTTP server.
+  ``` 
+- **Local Web Server:** Ensure a local server (like MAMP) is available to host the HTML frontend, or be prepared to use Python's built-in HTTP server.
 
 ### 4. Establish a Virtual Environment
 To avoid system file conflicts and `externally-managed-environment` errors, isolate the dependencies using a Python Virtual Environment (`venv`). Navigate to the transferred project folder and execute the following:
-
-```
+```bash
+# Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate
-```
-```
-pip install openai-whisper chromadb sentence-transformers fastapi uvicorn requests
-```
+  ``` 
+```bash
+# Install required dependencies
+pip install chromadb sentence-transformers fastapi uvicorn requests openai-whisper
+  ``` 
 
 ### 5. Execute the Pipeline
 With the environment isolated and the pre-built database in place, launch the three layers of the architecture:
-* **The Brain:** Ensure the Ollama application is running in the background.
-* **The Middleware:** Start the Python API script within the activated virtual environment to listen for database queries.
-```
-# Assuming your API script is named backend.py and uses FastAPI
-uvicorn backend:app --host localhost --port 8000
-```
-* **The Frontend:** Place the HTML file in the local server directory (e.g., MAMP `htdocs`), or launch a simple HTTP server to serve the interface.
-```
-# Run this from the directory containing your HTML file
+- **The Brain:** Ensure the Ollama application is running in the background.
+```bash
+ollama run llama3.1
+  ``` 
+- **Database Re-indexing (Optional / Maintenance):** If new transcripts are added, rebuild the vector index.
+```bash
+python3 build_index.py
+  ``` 
+- **The Middleware:** Start the Python API script within the activated virtual environment to listen for database queries.
+```bash
+python3 -m uvicorn backend:app --host localhost --port 8000
+  ``` 
+- **The Frontend:** Place the HTML file in the local server directory (e.g., MAMP `htdocs`), or launch a simple HTTP server to serve the interface.
+```bash
 python3 -m http.server 8888
-```
+  ``` 
 
 ## Core Capabilities
 - **Data Sovereignty:** By keeping all media, databases, and AI models local, the project is completely insulated from commercial platform changes, arbitrary API limits, or account deletions.
