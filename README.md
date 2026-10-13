@@ -41,6 +41,64 @@ Running a complete, offline AI pipeline necessitates specific hardware capabilit
 
 *Tooling Scalability:* The architecture is designed to adapt to the available hardware. For this proof of concept, the Whisper `small` model is utilised to balance transcription accuracy with memory efficiency, ensuring the system remains accessible on standard consumer workstations.
 
+## System Deployment & Portability
+To deploy this local RAG architecture on a secondary host machine without repeating the intensive transcription and indexing phases, follow this structured workflow:
+
+### 1. Verify Target Hardware
+Ensure the new host machine meets the operational baselines required for local AI execution (Apple Silicon recommended; 16GB RAM baseline).
+
+### 2. Transfer the Pre-Compiled Project Directory
+Do not force the new machine to transcribe the videos or build the database from scratch. Package and transfer the entire project directory, which must include:
+* The `vimeo_downloads` directory containing the `.mp4` video files.
+* The `transcripts` directory containing all Whisper `.json` files.
+* The `chroma_db` directory (containing the pre-embedded vectors for instant search).
+* The Python backend scripts and HTML/JS frontend files.
+
+### 3. Install Core System Software
+The new machine requires the base execution engines:
+* **Ollama:** Install Ollama and pull the specific LLM being utilised.
+  
+```
+# Install Ollama via Homebrew
+brew install --cask ollama
+
+# Pull and run the recommended model (e.g., Llama 3.1 8B)
+ollama run llama3.1
+```
+
+  
+* **Python 3:** Ensure Python 3.8+ is installed on the system.
+  
+```
+brew install python3
+```
+* **Local Web Server:** Ensure a local server (like MAMP) is available to host the HTML frontend, or be prepared to use Python's built-in HTTP server.
+
+### 4. Establish a Virtual Environment
+To avoid system file conflicts and `externally-managed-environment` errors, isolate the dependencies using a Python Virtual Environment (`venv`). Navigate to the transferred project folder and execute the following:
+
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+```
+pip install openai-whisper chromadb sentence-transformers fastapi uvicorn requests
+```
+
+### 5. Execute the Pipeline
+With the environment isolated and the pre-built database in place, launch the three layers of the architecture:
+* **The Brain:** Ensure the Ollama application is running in the background.
+* **The Middleware:** Start the Python API script within the activated virtual environment to listen for database queries.
+```
+# Assuming your API script is named backend.py and uses FastAPI
+uvicorn backend:app --host localhost --port 8000
+```
+* **The Frontend:** Place the HTML file in the local server directory (e.g., MAMP `htdocs`), or launch a simple HTTP server to serve the interface.
+```
+# Run this from the directory containing your HTML file
+python3 -m http.server 8888
+```
+
 ## Core Capabilities
 - **Data Sovereignty:** By keeping all media, databases, and AI models local, the project is completely insulated from commercial platform changes, arbitrary API limits, or account deletions.
 - **Strict Archival Grounding:** The LLM is restricted from using its general training data, ensuring historical accuracy and protecting the integrity of the curators' metadata.
