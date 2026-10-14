@@ -1,132 +1,203 @@
-# SYA #BlackLives: The Black London Collection - Local RAG Architecture
+# SYA #BlackLives: The Black London Collection – Local RAG Architecture
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23351532.svg)](https://doi.org/10.5281/zenodo.23351532)
 
+> **Status: proof of concept.** This repository documents a working prototype, not a production system. See [Limitations](#limitations) before relying on its output.
 
 ## Project Overview
-This repository contains an on-prem iteration of the architecture and documentation for the "Black London" audiovisual archive (1991–1993) retrieval system. Initially reliant on a proprietary cloud video platform for hosting and metadata indexing, the prototype demonstrated vulnerability to third-party platform deprecation and data loss. To guarantee long-term archival resilience, data sovereignty, and strict privacy, the system has been re-architected into a fully offline, open-source Retrieval-Augmented Generation (RAG) ecosystem.
+
+This repository contains an on-premises iteration of the architecture and documentation for the "Black London" audiovisual archive (1991–1993) retrieval system. The original prototype relied on a proprietary cloud video platform for hosting and metadata indexing, and proved vulnerable to third-party platform deprecation and data loss.
+
+To improve long-term archival resilience, data sovereignty and privacy, the system has been re-architected as an open-source Retrieval-Augmented Generation (RAG) stack that runs on a single local machine. **Once set up, it requires no internet connection and sends no data to external services.**
 
 ## Architectural Approach
-The system operates by decoupling the video assets from the search intelligence. It converts spoken audio into searchable text, embeds that text into a locally hosted vector database, and uses a local Large Language Model (LLM) to answer natural language queries based strictly on the validated archival transcripts.
 
-<img width="1342" height="869" alt="RAG" src="https://github.com/user-attachments/assets/5a9832f5-1868-4ad4-acc5-d13eca1db15a" />
+The system decouples the video assets from the search layer. It converts spoken audio into text, embeds that text in a locally hosted vector database, and uses a local Large Language Model (LLM) to answer natural-language queries from the retrieved transcript excerpts.
 
-The workflow is divided into three distinct layers:
-1. **The Frontend (Presentation & Media):** A lightweight HTML/JavaScript interface that handles user queries and controls local media playback.
-2. **The Backend (The Middleware):** A Python-based API that routes the user's query, fetches relevant historical context, and oversees the AI generation.
-3. **The AI & Data Layer (The Brain):** An entirely offline suite of machine learning models and databases that process text, understand semantic meaning, and generate answers.
+<img width="1342" height="869" alt="RAG architecture diagram" src="https://github.com/user-attachments/assets/5a9832f5-1868-4ad4-acc5-d13eca1db15a" />
 
-The actual POC deployment looks thus:
+The workflow is divided into three layers:
 
-<img width="1883" height="830" alt="image" src="https://github.com/user-attachments/assets/c48e81de-5404-4a15-95f3-b0dcb1034bf0" />
+1. **Frontend (presentation and media):** a lightweight HTML/JavaScript interface that handles user queries and controls local media playback.
+2. **Backend (middleware):** a Python API that routes the user's query, retrieves relevant transcript excerpts and oversees answer generation.
+3. **AI and data layer:** locally run models and databases that transcribe audio, embed text and generate answers.
+
+The proof-of-concept deployment looks like this:
+
+<img width="1883" height="830" alt="Proof-of-concept deployment diagram" src="https://github.com/user-attachments/assets/c48e81de-5404-4a15-95f3-b0dcb1034bf0" />
 
 ## Tooling Context and Justification
-To ensure the archive does not feed into external commercial models and remains functional without internet access, the following open-source stack is utilised:
 
-### 1. Audio Transcription: OpenAI Whisper (Local)
-Legacy media requires highly accurate transcription to be searchable. Whisper is run locally via the command line to batch-process the raw video files. Crucially, Whisper outputs structured JSON data containing precise start and end timestamps for every phrase. This allows the text to remain permanently synchronised with the video frames.
+The following open-source stack is used so that the archive does not feed external commercial models and remains usable without internet access.
 
-### 2. Vector Database: ChromaDB & Sentence Transformers
-Instead of a traditional relational database, the system uses ChromaDB, a lightweight, local vector database. The Whisper transcripts are segmented into smaller chunks and converted into mathematical vectors using a Hugging Face embedding model (such as `all-MiniLM-L6-v2`). This enables semantic search—meaning the system can match the *context* and *intent* of a user's question with the archive, rather than relying on exact keyword matches. 
+### 1. Audio Transcription: OpenAI Whisper (local)
+
+Legacy media must be transcribed before it can be searched. Whisper is run locally from the command line to batch-process the raw video files. It outputs structured JSON containing start and end timestamps for each segment, which keeps the text linked to positions in the video.
+
+Whisper's output is machine-generated and has not been manually verified. Accuracy on archival audio, regional accents, dialect and proper names may be uneven.
+
+### 2. Vector Database: ChromaDB and Sentence Transformers
+
+Rather than a relational database, the system uses ChromaDB, a lightweight local vector database. Whisper transcripts are segmented into chunks and converted into vectors using a Hugging Face embedding model (`all-MiniLM-L6-v2`). This enables semantic search: the system can match the meaning of a question to relevant passages without relying on exact keywords.
 
 ### 3. Local Generation: Ollama
-To ensure absolute data privacy, the system uses Ollama, an application that runs Large Language Models locally on the host machine. When a user asks a question, the retrieved transcript chunks are sent to the local LLM with strict instructions to generate an answer using *only* the provided historical context. This anti-hallucination safeguard ensures that the AI only returns validated archival data.
 
-### 4. Application Programming Interface (API): Python (FastAPI / Flask)
-A lightweight Python server acts as the bridge between the database, the AI, and the user. It receives the natural language query from the web interface, queries ChromaDB for the relevant transcript chunks, prompts Ollama to write the response, and formats the final output (complete with video citations) to send back to the user.
+Ollama runs LLMs locally on the host machine. When a user asks a question, the three most relevant transcript chunks are sent to the local model (Llama 3.1 in this prototype) with an instruction to answer using only that context and to say so if the answer is not present.
 
-### 5. Media Delivery: HTML5 & Localhost (e.g., MAMP)
-The frontend relies on standard HTML5 video capabilities. Because the video assets and the application are hosted locally, the interface can parse the timecode metadata returned by the Python API. When a user clicks a citation generated by the AI, JavaScript instructs the HTML5 player to load the corresponding video file and immediately jump to the exact second the relevant conversation occurs.
+This is a prompt-level safeguard. It reduces, but does not eliminate, the risk of the model adding unsupported information, particularly with smaller models.
 
-## Hardware Requirements & Scalability
-Running a complete, offline AI pipeline necessitates specific hardware capabilities. Because the host machine acts as an independent AI server, performance is directly tied to the system's processor architecture and available memory.
+### 4. Application Programming Interface: Python (FastAPI)
 
-- **Processor:** Apple Silicon (M1, M2, M3, M4, or M5) is highly recommended. These chips feature a Unified Memory architecture and a dedicated Neural Engine, allowing tools like Ollama and Whisper to utilise GPU acceleration natively via Apple's Metal framework. While older Intel-based hardware can run the stack, transcription and text generation will be significantly slower.
-- **16GB RAM (Recommended Standard):** The ideal baseline. This provides sufficient headroom to load a high-quality 7B or 8B parameter LLM (such as Llama 3) concurrently with the Whisper transcription model and the operating system, without freezing or relying on slow swap memory.
-- **8GB RAM (Minimum Viable Standard):** Functional, but requires compromises. Users must deploy smaller, lighter LLMs and may experience system slowdowns during query generation as available memory is maximised.
-- **32GB+ RAM (Research Grade):** Provides the capacity to run massive 32B+ parameter LLMs and the most accurate, resource-intensive transcription models (e.g., Whisper `large-v3`) with near-instantaneous response times.
+A lightweight Python server bridges the database, the model and the user. It receives the query from the web interface, retrieves matching chunks from ChromaDB, prompts Ollama and returns the answer with a video citation.
 
-*Tooling Scalability:* The architecture is designed to adapt to the available hardware. For this proof of concept, the Whisper `small` model is utilised to balance transcription accuracy with memory efficiency, ensuring the system remains accessible on standard consumer workstations.
+### 5. Media Delivery: HTML5 and localhost (for example, MAMP)
 
-## System Deployment & Portability
-To deploy this local RAG architecture on a secondary host machine without repeating the intensive transcription and indexing phases, follow this structured workflow:
+The frontend uses standard HTML5 video. Because the videos and application are hosted locally, the interface can use the timecode returned by the API. When a user clicks a citation, JavaScript loads the corresponding video and seeks to the start of the cited segment.
 
-### 1. Verify Target Hardware
-Ensure the new host machine meets the operational baselines required for local AI execution (Apple Silicon recommended; 16GB RAM baseline).
+## Hardware Requirements and Scalability
 
-### 2. Transfer the Pre-Compiled Project Directory
-Do not force the new machine to transcribe the videos or build the database from scratch. Package and transfer the entire project directory, which must include:
-- The `vimeo_downloads` directory containing the `.mp4` video files.
-- The `transcripts` directory containing all Whisper `.json` files.
-- The `chroma_db` directory (containing the pre-embedded vectors for instant search).
-- The Python backend scripts and HTML/JS frontend files.
+Running the full pipeline locally requires capable hardware. Performance depends on processor architecture and available memory.
 
-### 3. Install Core System Software
-The new machine requires the base execution engines:
-- **Ollama:** Install Ollama and pull the specific LLM being utilised.
+- **Processor:** Apple Silicon (M1 or later) is recommended. Its unified memory architecture allows Ollama and Whisper to use GPU acceleration through Apple's Metal framework. Intel-based machines can run the stack, but transcription and generation will be considerably slower.
+- **16 GB RAM (recommended baseline):** sufficient to run a 7B or 8B parameter model, such as Llama 3.1, alongside Whisper and the operating system without heavy swapping.
+- **8 GB RAM (minimum):** workable with smaller models, but expect slowdowns during generation.
+- **32 GB RAM or more:** allows larger models (32B and above) and more accurate Whisper models such as `large-v3`.
+
+*Scalability note:* the architecture can adapt to the available hardware. This proof of concept uses the Whisper `small` model to balance accuracy and memory use on standard consumer machines. It has not been tested on large archives.
+
+## System Deployment and Portability
+
+To deploy on a second machine without repeating transcription and indexing, follow this workflow.
+
+### 1. Check the Target Hardware
+
+Confirm that the new machine meets the baseline above.
+
+### 2. Transfer the Project Directory
+
+Copy the entire project directory, which must include:
+
+- the `vimeo_downloads` directory containing the `.mp4` video files;
+- the `transcripts` directory containing the Whisper `.json` files;
+- the `chroma_db` directory containing the pre-computed vectors;
+- the Python backend scripts and HTML/JavaScript frontend files.
+
+### 3. Install Core Software
+
+**Ollama:** install it and pull the model.
+
 ```bash
 # Install Ollama via Homebrew
 brew install --cask ollama
 
-# Pull and run the recommended model
-ollama run llama3.1
-  ``` 
-- **Python 3:** Ensure Python 3.8+ is installed on the system.
+# Download the model
+ollama pull llama3.1
+```
+
+**Python 3:** install a current Python 3 release. Check the minimum versions required by the current releases of `chromadb` and `sentence-transformers`, as these may be higher than 3.8.
+
 ```bash
 brew install python3
-  ``` 
-- **Local Web Server:** Ensure a local server (like MAMP) is available to host the HTML frontend, or be prepared to use Python's built-in HTTP server.
+```
 
-### 4. Establish a Virtual Environment
-To avoid system file conflicts and `externally-managed-environment` errors, isolate the dependencies using a Python Virtual Environment (`venv`). Navigate to the transferred project folder and execute the following:
+**ffmpeg:** required by Whisper to read audio and video files.
+
 ```bash
-# Create and activate virtual environment
+brew install ffmpeg
+```
+
+**Local web server:** use MAMP or similar, or Python's built-in HTTP server.
+
+### 4. Create a Virtual Environment
+
+A virtual environment avoids `externally-managed-environment` errors and dependency conflicts.
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
-  ``` 
-```bash
-# Install required dependencies
-pip install chromadb sentence-transformers fastapi uvicorn requests openai-whisper
-  ``` 
+```
 
-### 5. Execute the Pipeline
-With the environment isolated and the pre-built database in place, launch the three layers of the architecture:
-- **The Brain:** Ensure the Ollama application is running in the background.
 ```bash
-ollama run llama3.1
-  ``` 
-- **Database Re-indexing (Optional / Maintenance):** If new transcripts are added, rebuild the vector index.
+pip install chromadb sentence-transformers fastapi uvicorn requests openai-whisper
+```
+
+### 5. Run the Pipeline
+
+- **The model:** ensure Ollama is running in the background (the desktop app, or `ollama serve`).
+
+- **Re-indexing (optional):** if new transcripts are added, rebuild the vector index.
+
+  ```bash
+  python3 build_index.py
+  ```
+
+- **The middleware:** start the API inside the virtual environment.
+
+  ```bash
+  python3 -m uvicorn backend:app --host localhost --port 8000
+  ```
+
+- **The frontend:** place the HTML file in your local server directory (for example, MAMP `htdocs`), or serve it with:
+
+  ```bash
+  python3 -m http.server 8888
+  ```
+
+### Offline Operation
+
+Internet access is needed during first-time setup, when Whisper, Ollama and the embedding model are downloaded. After those downloads, the system can run without a connection. To enforce this, you can set the following before starting the backend:
+
 ```bash
-python3 build_index.py
-  ``` 
-- **The Middleware:** Start the Python API script within the activated virtual environment to listen for database queries.
-```bash
-python3 -m uvicorn backend:app --host localhost --port 8000
-  ``` 
-- **The Frontend:** Place the HTML file in the local server directory (e.g., MAMP `htdocs`), or launch a simple HTTP server to serve the interface.
-```bash
-python3 -m http.server 8888
-  ``` 
+export HF_HUB_OFFLINE=1
+```
 
 ## Core Capabilities
-- **Data Sovereignty:** By keeping all media, databases, and AI models local, the project is completely insulated from commercial platform changes, arbitrary API limits, or account deletions.
-- **Strict Archival Grounding:** The LLM is restricted from using its general training data, ensuring historical accuracy and protecting the integrity of the curators' metadata.
-- **Time-Aware Retrieval:** The integration of timestamped transcripts allows the system to bridge the gap between text-based search and audiovisual playback seamlessly.
+
+- **Local data handling:** at runtime, media, databases and models all remain on the host machine. No queries or archive content are sent to third-party services, and the system is unaffected by platform changes, API limits or account deletions.
+- **Prompt-level grounding:** the model is instructed to answer only from retrieved transcript excerpts and to state when the archive does not contain the answer. This supports, but does not guarantee, fidelity to the archive.
+- **Timestamp-linked citations:** transcript timestamps are stored as metadata, so a citation can open the source video at the relevant point.
 
 ## Quick Start (Daily Usage / Post-Reboot)
 
-If you restart your machine, follow these simple steps to bring the service back online:
+If you restart your machine, follow these steps to bring the service back online.
 
-### Step 1: Launch the AI Service (Terminal Tab 1)
+### Step 1: Start the AI Service
+
+Ensure the Ollama application is running in the background. Alternatively, in a terminal:
+
 ```bash
-ollama run llama3.1
-  ``` 
+ollama serve
+```
 
 ### Step 2: Launch the Backend API (Terminal Tab 2)
+
 ```bash
 cd Sites/localhost/RAG
 source venv/bin/activate
 python3 -m uvicorn backend:app --host localhost --port 8000
-  ``` 
+```
 
 ### Step 3: Open the Interface
-Ensure your local server (e.g., MAMP) is active, then navigate to your local web address in your browser.
+
+Ensure your local server (for example, MAMP) is active, then navigate to your local web address in your browser.
+
+## Limitations
+
+- **Transcription errors.** Whisper `small` output is unreviewed. Misheard names, dialect or period terminology will propagate into search results and answers. Manual review is advisable for scholarly or curatorial use.
+- **Grounding is not guaranteed.** The "answer only from context" instruction can be ignored by the model, and answers should be checked against the cited source.
+- **Partial citations.** The API retrieves three chunks but currently returns only the filename and start time of the top-ranked one. An answer may draw on other chunks that are not cited.
+- **No relevance threshold.** The top three chunks are always retrieved, even if none is a good match, so weak matches can still be passed to the model.
+- **Retrieval depth.** Fixed top-three retrieval may miss relevant material, particularly for questions spanning several recordings.
+- **No formal evaluation.** Retrieval quality and answer accuracy have not been benchmarked against a reference question set.
+- **Untested at scale.** The prototype has not been tested on large collections.
+- **Permissive CORS.** The backend currently allows requests from any origin (`allow_origins=["*"]`). This is acceptable for local development but should be restricted before use on a shared network.
+
+## Suggested Hardening
+
+1. Return citations for all retrieved chunks, not only the top-ranked one.
+2. Apply a distance threshold to the ChromaDB results and return "the archive does not contain this information" without calling the model when no chunk is sufficiently close.
+3. Restrict CORS to the frontend's origin (for example, `http://localhost:8888`) and remove `allow_credentials`.
+4. Build a small evaluation set of questions with known answers and timestamps, and track retrieval accuracy over time.
+5. Introduce a human review step for transcripts before indexing.
+README.md
+Displaying README.md.
