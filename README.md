@@ -192,7 +192,7 @@ Ensure your local server (for example, MAMP) is active, then navigate to your lo
 - **Untested at scale.** The prototype has not been tested on large collections.
 - **Permissive CORS.** The backend currently allows requests from any origin (`allow_origins=["*"]`). This is acceptable for local development but should be restricted before use on a shared network.
 
-## Suggested Hardening
+## Roadmap
 
 1. Return citations for all retrieved chunks, not only the top-ranked one.
 2. Apply a distance threshold to the ChromaDB results and return "the archive does not contain this information" without calling the model when no chunk is sufficiently close.
