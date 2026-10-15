@@ -199,5 +199,4 @@ Ensure your local server (for example, MAMP) is active, then navigate to your lo
 3. Restrict CORS to the frontend's origin (for example, `http://localhost:8888`) and remove `allow_credentials`.
 4. Build a small evaluation set of questions with known answers and timestamps, and track retrieval accuracy over time.
 5. Introduce a human review step for transcripts before indexing.
-README.md
-Displaying README.md.
+
